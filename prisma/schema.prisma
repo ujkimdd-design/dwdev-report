@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  password   String
+  name       String
+  role       String   @default("staff")
+  created_at DateTime @default(now())
+}
+
+model Member {
+  id               String    @id @default(cuid())
+  name             String
+  birth_date       DateTime
+  gender           String
+  first_visit_date DateTime
+  created_at       DateTime  @default(now())
+  reports          Report[]
+}
+
+model Report {
+  id              String                @id @default(cuid())
+  member_id       String
+  member          Member                @relation(fields: [member_id], references: [id], onDelete: Cascade)
+  year            Int
+  month           Int
+  status          String                @default("draft")
+  created_at      DateTime              @default(now())
+  updated_at      DateTime              @updatedAt
+  balance_records RonficBalanceRecord[]
+  vo2_records     RonficVo2Record[]
+  fra_records     InbodyFraRecord[]
+  body_records    InbodyBodyRecord[]
+  comments        ExpertComment[]
+
+  @@unique([member_id, year, month])
+}
+
+model RonficBalanceRecord {
+  id                   String   @id @default(cuid())
+  report_id            String
+  report               Report   @relation(fields: [report_id], references: [id], onDelete: Cascade)
+  measured_at          DateTime @default(now())
+  balance_total_score  Float?
+  balance_grade        String?
+  upper_push_left      Float?
+  upper_push_right     Float?
+  upper_pull_left      Float?
+  upper_pull_right     Float?
+  trunk_rotation_left  Float?
+  trunk_rotation_right Float?
+  lower_squat          Float?
+  lower_deadlift       Float?
+}
+
+model RonficVo2Record {
+  id                      String   @id @default(cuid())
+  report_id               String
+  report                  Report   @relation(fields: [report_id], references: [id], onDelete: Cascade)
+  measured_at             DateTime @default(now())
+  vo2peak                 Float?
+  body_age_aerobic        String?
+  fitness_grade           String?
+  disease_mortality_risk  String?
+  cardiovascular_risk     String?
+  cancer_risk             String?
+  cancer_mortality_risk   String?
+  hypertension_risk       String?
+  metabolic_syndrome_risk String?
+  stroke_risk             String?
+}
+
+model InbodyFraRecord {
+  id                          String   @id @default(cuid())
+  report_id                   String
+  report                      Report   @relation(fields: [report_id], references: [id], onDelete: Cascade)
+  measured_at                 DateTime @default(now())
+  sensory_total_score         Float?
+  sensory_basic_balance       Float?
+  sensory_somatosensory       Float?
+  sensory_visual              Float?
+  sensory_vestibular          Float?
+  sensory_basic_grade         String?
+  sensory_somatosensory_grade String?
+  sensory_visual_grade        String?
+  sensory_vestibular_grade    String?
+  balance_total_score         Float?
+  balance_fast_shift_speed    Float?
+  balance_target_follow_pct   Float?
+  balance_fast_grade          String?
+  balance_target_grade        String?
+  neuro_total_score           Float?
+  neuro_reaction_time         Float?
+  neuro_posture_hold_time     Float?
+  neuro_reaction_grade        String?
+  neuro_posture_grade         String?
+}
+
+model InbodyBodyRecord {
+  id                   String   @id @default(cuid())
+  report_id            String
+  report               Report   @relation(fields: [report_id], references: [id], onDelete: Cascade)
+  measured_at          DateTime @default(now())
+  inbody_score         Float?
+  weight               Float?
+  skeletal_muscle_mass Float?
+  body_fat_mass        Float?
+  bmi                  Float?
+  body_fat_pct         Float?
+  smi                  Float?
+  phase_angle          Float?
+  ecw_ratio            Float?
+  lean_right_arm       Float?
+  lean_left_arm        Float?
+  lean_trunk           Float?
+  lean_right_leg       Float?
+  lean_left_leg        Float?
+  nutrition_protein    String?
+  nutrition_minerals   String?
+  nutrition_fat        String?
+  obesity_bmi          String?
+  obesity_fat_pct      String?
+  balance_upper_lr     String?
+  balance_lower_lr     String?
+  balance_upper_lower  String?
+}
+
+model ExpertComment {
+  id           String   @id @default(cuid())
+  report_id    String
+  report       Report   @relation(fields: [report_id], references: [id], onDelete: Cascade)
+  section_type String
+  comment_text String
+  expert_name  String
+  created_at   DateTime @default(now())
+}
